@@ -59,7 +59,7 @@ describe("registerUser", () => {
       expect(error.fields.username).toContain("must be between 3 and 20 characters");
     });
 
-    it.each(["new-user", "new user", "користувач", " new_user"])(
+    it.each(["new-user", "new user", "користувач"])(
       "rejects %p with disallowed characters",
       (username) => {
         const error = captureError(username);
@@ -74,11 +74,29 @@ describe("registerUser", () => {
       expect(error.message).toBe("Username already taken");
     });
 
-    it("stores the username exactly as typed", () => {
+    it("stores the username with its original case", () => {
       registerUser({ ...validInput, username: "Anna_K" });
 
       expect(userRepository.findByEmail(validInput.email)?.username).toBe("Anna_K");
       expect(userRepository.findByUsername("anna_k")?.username).toBe("Anna_K");
+    });
+
+    it.each([" new_user", "new_user ", "\tnew_user\n"])(
+      "trims surrounding whitespace from %p before saving",
+      (username) => {
+        registerUser({ ...validInput, username });
+
+        expect(userRepository.findByEmail(validInput.email)?.username).toBe("new_user");
+      },
+    );
+
+    it("checks length after trimming", () => {
+      const error = captureError("  ab  ");
+      expect(error.fields.username).toEqual(["must be between 3 and 20 characters"]);
+    });
+
+    it("rejects a taken username even with surrounding spaces", () => {
+      expect(captureError(" john_doe ").code).toBe("USERNAME_TAKEN");
     });
 
     it("rejects a newly registered username in a different case", () => {

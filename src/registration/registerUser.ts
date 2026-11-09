@@ -11,10 +11,12 @@ export interface RegisterInput {
 
 export function registerUser(input: RegisterInput): User {
   const email = input.email.trim().toLowerCase();
+  // Пробіли по краях прибираємо; регістр зберігаємо як ввів користувач
+  const username = input.username.trim();
 
   const fields: FieldErrors = {};
   const emailErrors = validate(email, [matches(EMAIL_PATTERN, "must be a valid email")]);
-  const usernameErrors = validate(input.username, [
+  const usernameErrors = validate(username, [
     lengthBetween(3, 20),
     matches(USERNAME_PATTERN, "may contain only Latin letters, digits and _"),
   ]);
@@ -25,7 +27,7 @@ export function registerUser(input: RegisterInput): User {
   if (Object.keys(fields).length) throw new RegistrationError("INVALID_INPUT", fields);
 
   if (userRepository.findByEmail(email)) throw new RegistrationError("EMAIL_TAKEN");
-  if (userRepository.findByUsername(input.username)) throw new RegistrationError("USERNAME_TAKEN");
+  if (userRepository.findByUsername(username)) throw new RegistrationError("USERNAME_TAKEN");
 
-  return userRepository.create({ email, username: input.username });
+  return userRepository.create({ email, username });
 }

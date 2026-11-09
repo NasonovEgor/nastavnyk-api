@@ -23,7 +23,7 @@ Flow: `registration/registerUser.ts` → `validation/` (rules + patterns) → `u
 - **Validation** (`validation/rules.ts`): a `Rule` is `(value) => errorMessage | null`; build rules with factories (`lengthBetween`, `matches`) and run them with `validate(value, rules)`, which returns the error list. Regexes live in `validation/patterns.ts`.
 - **`userRepository`** is a module-level in-memory singleton seeded with two users (`john@example.com`, `olena@example.com`); ids are `users.length + 1`. `reset()` restores the seed data and is called in each test's `beforeEach`, so any new test file that touches the repository must do the same.
 
-Usernames must be 3–20 chars of `[A-Za-z0-9_]` (not trimmed) and are unique case-insensitively (`findByUsername` lowercases both sides), but are stored with the case the user typed. Duplicate checks run after format validation: `EMAIL_TAKEN` first, then `USERNAME_TAKEN`.
+Usernames are trimmed first (like emails), then must be 3–20 chars of `[A-Za-z0-9_]`, and are unique case-insensitively (`findByUsername` lowercases both sides), but are stored with the case the user typed. Duplicate checks run after format validation: `EMAIL_TAKEN` first, then `USERNAME_TAKEN`.
 
 Current gaps (the code doesn't do these, so don't assume it does): the password isn't stored, and `SLUG_PATTERN` isn't used yet.
 
