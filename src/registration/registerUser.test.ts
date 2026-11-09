@@ -73,5 +73,20 @@ describe("registerUser", () => {
       expect(error.code).toBe("USERNAME_TAKEN");
       expect(error.message).toBe("Username already taken");
     });
+
+    it("stores the username exactly as typed", () => {
+      registerUser({ ...validInput, username: "Anna_K" });
+
+      expect(userRepository.findByEmail(validInput.email)?.username).toBe("Anna_K");
+      expect(userRepository.findByUsername("anna_k")?.username).toBe("Anna_K");
+    });
+
+    it("rejects a newly registered username in a different case", () => {
+      registerUser({ ...validInput, username: "Anna_K" });
+
+      expect(() =>
+        registerUser({ ...validInput, email: "other@example.com", username: "ANNA_K" }),
+      ).toThrow("Username already taken");
+    });
   });
 });
