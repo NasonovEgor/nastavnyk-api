@@ -19,10 +19,12 @@ On Windows PowerShell, Jest/npm output written to stderr may appear wrapped in a
 Flow: `registration/registerUser.ts` → `validation/` (rules + patterns) → `users/userRepository.ts`.
 
 - **`registerUser`** normalizes the email (`trim().toLowerCase()`) *before* both validation and the duplicate lookup, collects per-field errors, then throws a single `RegistrationError`.
-- **Errors** (`registration/errors.ts`): `RegistrationError` carries a `code` (`INVALID_INPUT` | `EMAIL_TAKEN`) and `fields: Record<field, string[]>`. The error `message` comes from `REGISTRATION_MESSAGES[code]`, and tests assert on those exact strings, so changing a message breaks tests.
+- **Errors** (`registration/errors.ts`): `RegistrationError` carries a `code` (`INVALID_INPUT` | `EMAIL_TAKEN` | `USERNAME_TAKEN`) and `fields: Record<field, string[]>`. The error `message` comes from `REGISTRATION_MESSAGES[code]`, and tests assert on those exact strings, so changing a message breaks tests.
 - **Validation** (`validation/rules.ts`): a `Rule` is `(value) => errorMessage | null`; build rules with factories (`lengthBetween`, `matches`) and run them with `validate(value, rules)`, which returns the error list. Regexes live in `validation/patterns.ts`.
 - **`userRepository`** is a module-level in-memory singleton seeded with two users (`john@example.com`, `olena@example.com`); ids are `users.length + 1`. `reset()` restores the seed data and is called in each test's `beforeEach`, so any new test file that touches the repository must do the same.
 
-Current gaps (the code doesn't do these, so don't assume it does): `username` isn't validated or checked for uniqueness (`findByUsername` exists but is unused), the password isn't stored, and `SLUG_PATTERN` isn't used yet.
+Usernames must be 3–20 chars of `[A-Za-z0-9_]` (not trimmed) and are unique case-insensitively (`findByUsername` lowercases both sides), but are stored with the case the user typed. Duplicate checks run after format validation: `EMAIL_TAKEN` first, then `USERNAME_TAKEN`.
+
+Current gaps (the code doesn't do these, so don't assume it does): the password isn't stored, and `SLUG_PATTERN` isn't used yet.
 
 Code comments and README are in Ukrainian; user-facing error messages are in English.

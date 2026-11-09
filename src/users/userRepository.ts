@@ -17,7 +17,9 @@ export const userRepository = {
   },
 
   findByUsername(username: string): User | undefined {
-    return users.find((u) => u.username === username);
+    // Без урахування регістру: "john_doe" і "John_Doe" — той самий username
+    const needle = username.toLowerCase();
+    return users.find((u) => u.username.toLowerCase() === needle);
   },
 
   create(data: Omit<User, "id">): User {
